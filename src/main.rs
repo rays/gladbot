@@ -56,7 +56,7 @@ fn calc_ac(agility: i8, style: &String) -> i8 {
     let agility_mod = calc_modifier(agility);
     let mut ac = 10;
 
-    let manica = 1
+    let manica = 1;
     let shield = 1;
     let leather = 2;
     let large_shield = 2;
