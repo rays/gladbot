@@ -106,7 +106,6 @@ fn load_notes(style: &String) -> String {
     return notes;
 }
 
-// fn find_style<'a>(luck: i8) -> (String, Vec<&'a str>) {
 fn find_style(luck: i8) -> String {
     let luck_modifier = calc_modifier(luck);
 
