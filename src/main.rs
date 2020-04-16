@@ -56,17 +56,20 @@ fn calc_ac(agility: i8, style: &String) -> i8 {
     let agility_mod = calc_modifier(agility);
     let mut ac = 10;
 
-    let leather = 2;
+    let manica = 1
     let shield = 1;
+    let leather = 2;
     let large_shield = 2;
     let hide = 3;
     let scale = 4;
     let breastplate = 7;
 
     match style.as_str() {
-        "Bestiarius" | "Dimachaerus" => ac = ac + leather,
-        "Velites" | "Thracian" | "Hoplomachus" | "Eques" => ac = ac + shield + agility_mod,
-        "Murmillo" => ac = ac + large_shield + agility_mod,
+        "Bestiarius" | "Dimachaerus" => ac = ac + leather + agility_mod,
+        "Velites" | "Hoplomachus" | "Eques" => ac = ac + shield + agility_mod,
+        "Thrancian" => ac = ac + manica + shield + agility_mod,
+        "Retiarius" => ac = ac + manica + agility_mod,
+        "Murmillo" => ac = ac + large_shield + manica + agility_mod,
         "Provacator" => ac = ac + breastplate + large_shield + agility_mod,
         "Scissor" => ac = ac + hide + agility_mod,
         "Samnite" => ac = ac + large_shield + scale + agility_mod,
