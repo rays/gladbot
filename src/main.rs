@@ -205,12 +205,14 @@ fn main() {
     loop {
         match connection.recv_event() {
             Ok(Event::MessageCreate(message)) => {
-                println!("{} says: {}", message.author.name, message.content);
                 if message.content == "!glad" {
+                    println!("{} says: {}", message.author.name, message.content);
                     let character = gen_character();
                     let msg = format!("{:?}", character);
                     let _ = discord.send_message(message.channel_id, &msg, "", false);
                 } else if message.content == "!quit" {
+                    println!("{} says: {}", message.author.name, message.content);
+
                     println!("Quitting.");
                     break;
                 }
