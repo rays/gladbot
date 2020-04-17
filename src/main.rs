@@ -1,5 +1,10 @@
+extern crate discord;
+
+use discord::model::Event;
+use discord::Discord;
 use rand::seq::SliceRandom;
 use rand::Rng;
+use std::env;
 
 #[derive(Debug)]
 
@@ -119,7 +124,6 @@ fn find_style(luck: i8) -> String {
         "Bestiarius",
         "Velites",
         "Thracian",
-        "Manica",
         "Hoplomachus",
         "Retiarius",
         "Murmillo",
@@ -192,6 +196,31 @@ fn gen_character() -> Character {
 }
 
 fn main() {
-    let character = gen_character();
-    println!("{:?}", character)
+    let discord =
+        Discord::from_bot_token(&env::var("DISCORD_TOKEN").expect("Expected DISCORD_TOKEN"))
+            .expect("Login failed");
+
+    let (mut connection, _) = discord.connect().expect("connect failed");
+    println!("Ready.");
+    loop {
+        match connection.recv_event() {
+            Ok(Event::MessageCreate(message)) => {
+                println!("{} says: {}", message.author.name, message.content);
+                if message.content == "!glad" {
+                    let character = gen_character();
+                    let msg = format!("{:?}", character);
+                    let _ = discord.send_message(message.channel_id, &msg, "", false);
+                } else if message.content == "!quit" {
+                    println!("Quitting.");
+                    break;
+                }
+            }
+            Ok(_) => {}
+            Err(discord::Error::Closed(code, body)) => {
+                println!("Gateway closed on us with code {:?}: {}", code, body);
+                break;
+            }
+            Err(err) => println!("Receive error: {:?}", err),
+        }
+    }
 }
