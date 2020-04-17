@@ -67,7 +67,7 @@ fn calc_ac(agility: i8, style: &String) -> i8 {
     let large_shield = 2;
     let hide = 3;
     let scale = 4;
-    let breastplate = 7;
+    let breastplate = 3;
 
     match style.as_str() {
         "Bestiarius" | "Dimachaerus" => ac = ac + leather + agility_mod,
