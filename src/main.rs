@@ -207,12 +207,22 @@ fn main() {
             Ok(Event::MessageCreate(message)) => {
                 if message.content == "!glad" {
                     println!("{} says: {}", message.author.name, message.content);
-                    let character = gen_character();
-                    let msg = format!("{:?}", character);
+                    let glad = gen_character();
+                    let msg = format!{"A new gladiator has entered the arena
+                    Nationality: {}; Style: {}; HP: {}; AC: {};
+                    Str: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({});
+                    Notes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
+                    glad.strength, calc_modifier(glad.strength), 
+                    glad.agility, calc_modifier(glad.agility),
+                    glad.stamina, calc_modifier(glad.stamina),
+                    glad.personality, calc_modifier(glad.personality),
+                    glad.inteligence, calc_modifier(glad.inteligence),
+                    glad.luck, calc_modifier(glad.luck),
+                    glad.notes};
                     let _ = discord.send_message(message.channel_id, &msg, "", false);
                 } else if message.content == "!quit" {
                     println!("{} says: {}", message.author.name, message.content);
-
+                    let _ = discord.send_message(message.channel_id, "Gladbot is going away, bye!", "", false);
                     println!("Quitting.");
                     break;
                 }
