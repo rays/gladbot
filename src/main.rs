@@ -232,7 +232,7 @@ fn main() {
                 if message.content == "!glad" {
                     println!("{} asked me to create a new bot", message.author.name);
                     let glad = gen_character();
-                    let msg = format! {"A new gladiator has entered the arena
+                    let msg = format! {"A new gladiator has entered the arena\r\n
                     Nationality: {}; Style: {}; HP: {}; AC: {};
                     Str: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({});
                     Notes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
@@ -245,7 +245,7 @@ fn main() {
                     glad.notes};
                     let _ = discord.send_message(message.channel_id, &msg, "", false);
                 } else if message.content.to_uppercase() == message.content
-                    && message_size > 5
+                    && message_size >= 10
                     && message.author.name != "gladbot"
                 {
                     println!("{} shouted: {}", message.author.name, message.content);
