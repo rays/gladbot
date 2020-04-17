@@ -22,6 +22,29 @@ struct Character {
     notes: String,
 }
 
+fn get_quote() -> String {
+    let quotes = [
+        "I Will Have My Vengeance",
+        "Death smiles at us all. All a man can do is smile back",
+        "Only a Famous Death Will Do",
+        "Win the Crowd and Win the Freedom",
+        "Honor Rome",
+        "I Do What I Want to Do",
+        "I Kill Because I'm Required",
+        "Honor Maximus",
+        "At my signal, unleash hell",
+        "The frost, it sometimes makes the blade stick",
+        "Nothing happens to anyone that he is not fitted by nature to bear",
+        "What we do in life... echoes in eternity",
+        "Fear and wonder, a powerful combination",
+        "When a man sees his end... he wants to know there was some purpose to his life",
+        "I am required to kill, so I kill. That is enough",
+    ];
+
+    let quote = quotes.choose(&mut rand::thread_rng()).unwrap().to_string();
+    return quote
+}
+
 fn roller(num_die: i8, die_type: i8) -> i8 {
     let mut rng = rand::thread_rng();
     let mut result = 0;
@@ -220,6 +243,9 @@ fn main() {
                     glad.luck, calc_modifier(glad.luck),
                     glad.notes};
                     let _ = discord.send_message(message.channel_id, &msg, "", false);
+                } else if message.content.to_uppercase() == message.content && message.author.name != "gladbot" {
+                    let quote = get_quote().to_uppercase();
+                    let _ = discord.send_message(message.channel_id, &quote, "", false);
                 } else if message.content == "!quit" {
                     println!("{} says: {}", message.author.name, message.content);
                     let _ = discord.send_message(message.channel_id, "Gladbot is going away, bye!", "", false);
