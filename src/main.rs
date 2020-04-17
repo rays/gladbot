@@ -42,7 +42,7 @@ fn get_quote() -> String {
     ];
 
     let quote = quotes.choose(&mut rand::thread_rng()).unwrap().to_string();
-    return quote
+    return quote;
 }
 
 fn roller(num_die: i8, die_type: i8) -> i8 {
@@ -228,14 +228,15 @@ fn main() {
     loop {
         match connection.recv_event() {
             Ok(Event::MessageCreate(message)) => {
+                let message_size = message.content.chars().count();
                 if message.content == "!glad" {
-                    println!("{} says: {}", message.author.name, message.content);
+                    println!("{} asked me to create a new bot", message.author.name);
                     let glad = gen_character();
-                    let msg = format!{"A new gladiator has entered the arena
+                    let msg = format! {"A new gladiator has entered the arena
                     Nationality: {}; Style: {}; HP: {}; AC: {};
                     Str: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({});
                     Notes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
-                    glad.strength, calc_modifier(glad.strength), 
+                    glad.strength, calc_modifier(glad.strength),
                     glad.agility, calc_modifier(glad.agility),
                     glad.stamina, calc_modifier(glad.stamina),
                     glad.personality, calc_modifier(glad.personality),
@@ -243,12 +244,21 @@ fn main() {
                     glad.luck, calc_modifier(glad.luck),
                     glad.notes};
                     let _ = discord.send_message(message.channel_id, &msg, "", false);
-                } else if message.content.to_uppercase() == message.content && message.author.name != "gladbot" {
+                } else if message.content.to_uppercase() == message.content
+                    && message_size > 5
+                    && message.author.name != "gladbot"
+                {
+                    println!("{} shouted: {}", message.author.name, message.content);
                     let quote = get_quote().to_uppercase();
                     let _ = discord.send_message(message.channel_id, &quote, "", false);
                 } else if message.content == "!quit" {
-                    println!("{} says: {}", message.author.name, message.content);
-                    let _ = discord.send_message(message.channel_id, "Gladbot is going away, bye!", "", false);
+                    println!("{} asked to me to quit", message.author.name);
+                    let _ = discord.send_message(
+                        message.channel_id,
+                        "Gladbot is going away, bye!",
+                        "",
+                        false,
+                    );
                     println!("Quitting.");
                     break;
                 }
