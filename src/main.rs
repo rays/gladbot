@@ -228,6 +228,7 @@ fn main() {
     loop {
         match connection.recv_event() {
             Ok(Event::MessageCreate(message)) => {
+                println!("recieved new message...",);
                 if message.content == "!glad" {
                     println!(
                         "{} asked me to create a new gladiator!",
