@@ -228,7 +228,6 @@ fn main() {
     loop {
         match connection.recv_event() {
             Ok(Event::MessageCreate(message)) => {
-                let message_size = message.content.chars().count();
                 if message.content == "!glad" {
                     println!(
                         "{} asked me to create a new gladiator!",
@@ -260,6 +259,7 @@ fn main() {
                     break;
                 }
             }
+            Ok(_) => {}
             Err(discord::Error::Closed(code, body)) => {
                 println!("Gateway closed on us with code {:?}: {}", code, body);
                 break;
