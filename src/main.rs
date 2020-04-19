@@ -51,7 +51,7 @@ fn roller(num_die: i8, die_type: i8) -> i8 {
     let mut i = 0;
 
     while i < num_die {
-        let roll = rng.gen_range(1, die_type);
+        let roll = rng.gen_range(1, die_type+1);
         result = result + roll;
         i = i + 1;
     }
