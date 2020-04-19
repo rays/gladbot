@@ -232,7 +232,7 @@ fn main() {
                 if message.content == "!glad" {
                     println!("{} asked me to create a new bot", message.author.name);
                     let glad = gen_character();
-                    let msg = format! {"A new gladiator has entered the arena!\nNationality: {}; Style: {}; HP: {}; AC: {};\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({});\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
+                    let msg = format! {"A new gladiator has entered the arena!\n\nNationality: {}; Style: {}; HP: {}; AC: {};\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({});\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
                     glad.strength, calc_modifier(glad.strength),
                     glad.agility, calc_modifier(glad.agility),
                     glad.stamina, calc_modifier(glad.stamina),
