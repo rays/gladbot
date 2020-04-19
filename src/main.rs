@@ -95,7 +95,7 @@ fn calc_ac(agility: i8, style: &String) -> i8 {
     match style.as_str() {
         "Bestiarius" | "Dimachaerus" => ac = ac + leather + agility_mod,
         "Velites" | "Hoplomachus" | "Eques" => ac = ac + shield + agility_mod,
-        "Thrancian" => ac = ac + manica + shield + agility_mod,
+        "Thracian" => ac = ac + manica + shield + agility_mod,
         "Retiarius" => ac = ac + manica + agility_mod,
         "Murmillo" => ac = ac + large_shield + manica + agility_mod,
         "Provacator" => ac = ac + breastplate + large_shield + agility_mod,
@@ -230,7 +230,7 @@ fn main() {
             Ok(Event::MessageCreate(message)) => {
                 let message_size = message.content.chars().count();
                 if message.content == "!glad" {
-                    println!("{} asked me to create a new bot", message.author.name);
+                    println!("{} asked me to create a new gladiator!", message.author.name);
                     let glad = gen_character();
                     let msg = format! {"A new gladiator has entered the arena!\n\nNationality: {}; Style: {}; HP: {}; AC: {};\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({});\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
                     glad.strength, calc_modifier(glad.strength),
@@ -241,10 +241,7 @@ fn main() {
                     glad.luck, calc_modifier(glad.luck),
                     glad.notes};
                     let _ = discord.send_message(message.channel_id, &msg, "", false);
-                } else if message.content.to_uppercase() == message.content
-                    && message_size >= 10
-                    && message.author.name != "gladbot"
-                {
+                } else if message.content.to_uppercase() == "!taunt"
                     println!("{} shouted: {}", message.author.name, message.content);
                     let quote = get_quote().to_uppercase();
                     let _ = discord.send_message(message.channel_id, &quote, "", false);
