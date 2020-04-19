@@ -243,7 +243,7 @@ fn main() {
                     glad.luck, calc_modifier(glad.luck),
                     glad.notes};
                     let _ = discord.send_message(message.channel_id, &msg, "", false);
-                } else if message.content.to_uppercase() == "!taunt" {
+                } else if message.content == "!taunt" {
                     println!("{} shouted: {}", message.author.name, message.content);
                     let quote = get_quote().to_uppercase();
                     let _ = discord.send_message(message.channel_id, &quote, "", false);
