@@ -250,7 +250,7 @@ fn main() {
 fn glad(ctx: &mut Context, msg: &Message) -> CommandResult {
     println!("{} asked me to create a new gladiator!", msg.author.name);
     let glad = gen_character();
-    let out = format! {"A new gladiator has entered the arena!\n\nNationality: {}; Style: {};\nHP: {}; AC: {};\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({});\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
+    let out = format! {"A new gladiator has entered the arena!\n\nNationality: {}; Style: {}\nHP: {}; AC: {}\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({})\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
     glad.strength, calc_modifier(glad.strength),
     glad.agility, calc_modifier(glad.agility),
     glad.stamina, calc_modifier(glad.stamina),
