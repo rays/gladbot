@@ -1,12 +1,24 @@
-extern crate discord;
+use serenity::client::Client;
+use serenity::framework::standard::{
+    macros::{command, group},
+    CommandResult, StandardFramework,
+};
+use serenity::model::channel::Message;
+use serenity::prelude::{Context, EventHandler};
 
-use discord::model::Event;
-use discord::Discord;
+#[group]
+#[commands(glad, taunt)]
+struct General;
+
 use rand::seq::SliceRandom;
 use rand::Rng;
 use std::env;
 
 #[derive(Debug)]
+
+struct Handler;
+
+impl EventHandler for Handler {}
 
 struct Character {
     nationality: String,
@@ -219,53 +231,43 @@ fn gen_character() -> Character {
 }
 
 fn main() {
-    let discord =
-        Discord::from_bot_token(&env::var("DISCORD_TOKEN").expect("Expected DISCORD_TOKEN"))
-            .expect("Login failed");
+    // Login with a bot token from the environment
+    let mut client = Client::new(&env::var("DISCORD_TOKEN").expect("token"), Handler)
+        .expect("Error creating client");
+    client.with_framework(
+        StandardFramework::new()
+            .configure(|c| c.prefix("!")) // set the bot's prefix to "~"
+            .group(&GENERAL_GROUP),
+    );
 
-    let (mut connection, _) = discord.connect().expect("connect failed");
-    println!("Ready.");
-    loop {
-        match connection.recv_event() {
-            Ok(Event::MessageCreate(message)) => {
-                println!("recieved new message...",);
-                if message.content == "!glad" {
-                    println!(
-                        "{} asked me to create a new gladiator!",
-                        message.author.name
-                    );
-                    let glad = gen_character();
-                    let msg = format! {"A new gladiator has entered the arena!\n\nNationality: {}; Style: {}; HP: {}; AC: {};\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({});\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
-                    glad.strength, calc_modifier(glad.strength),
-                    glad.agility, calc_modifier(glad.agility),
-                    glad.stamina, calc_modifier(glad.stamina),
-                    glad.personality, calc_modifier(glad.personality),
-                    glad.inteligence, calc_modifier(glad.inteligence),
-                    glad.luck, calc_modifier(glad.luck),
-                    glad.notes};
-                    let _ = discord.send_message(message.channel_id, &msg, "", false);
-                } else if message.content == "!taunt" {
-                    println!("{} shouted: {}", message.author.name, message.content);
-                    let quote = get_quote().to_uppercase();
-                    let _ = discord.send_message(message.channel_id, &quote, "", false);
-                } else if message.content == "!quit" {
-                    println!("{} asked to me to quit", message.author.name);
-                    let _ = discord.send_message(
-                        message.channel_id,
-                        "Gladbot is going away, bye!",
-                        "",
-                        false,
-                    );
-                    println!("Quitting.");
-                    break;
-                }
-            }
-            Ok(_) => {}
-            Err(discord::Error::Closed(code, body)) => {
-                println!("Gateway closed on us with code {:?}: {}", code, body);
-                break;
-            }
-            Err(err) => println!("Receive error: {:?}", err),
-        }
+    // start listening for events by starting a single shard
+    if let Err(why) = client.start() {
+        println!("An error occurred while running the client: {:?}", why);
     }
+}
+
+#[command]
+fn glad(ctx: &mut Context, msg: &Message) -> CommandResult {
+    println!("{} asked me to create a new gladiator!", msg.author.name);
+    let glad = gen_character();
+    let out = format! {"A new gladiator has entered the arena!\n\nNationality: {}; Style: {};\nHP: {}; AC: {};\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({});\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
+    glad.strength, calc_modifier(glad.strength),
+    glad.agility, calc_modifier(glad.agility),
+    glad.stamina, calc_modifier(glad.stamina),
+    glad.personality, calc_modifier(glad.personality),
+    glad.inteligence, calc_modifier(glad.inteligence),
+    glad.luck, calc_modifier(glad.luck),
+    glad.notes};
+    msg.reply(ctx, &out)?;
+
+    Ok(())
+}
+
+#[command]
+fn taunt(ctx: &mut Context, msg: &Message) -> CommandResult {
+    println!("{} asked me to taunt them!", msg.author.name);
+    let quote = get_quote().to_uppercase();
+    msg.reply(ctx, &quote)?;
+
+    Ok(())
 }
