@@ -53,8 +53,7 @@ fn get_quote() -> String {
         "I am required to kill, so I kill. That is enough",
     ];
 
-    let quote = quotes.choose(&mut rand::thread_rng()).unwrap().to_string();
-    return quote;
+    quotes.choose(&mut rand::thread_rng()).unwrap().to_string()
 }
 
 fn roller(num_die: i8, die_type: i8) -> i8 {
@@ -64,21 +63,21 @@ fn roller(num_die: i8, die_type: i8) -> i8 {
 
     while i < num_die {
         let roll = rng.gen_range(1, die_type + 1);
-        result = result + roll;
-        i = i + 1;
+        result += roll;
+        i += 1;
     }
-    return result;
+    result
 }
 
 fn calc_modifier(stat: i8) -> i8 {
     match stat {
-        1..=3 => return -3,
-        4..=5 => return -2,
-        6..=8 => return -1,
-        13..=15 => return 1,
-        16..=17 => return 2,
-        18 => return 3,
-        _ => return 0,
+        1..=3 => -3,
+        4..=5 => -2,
+        6..=8 => -1,
+        13..=15 => 1,
+        16..=17 => 2,
+        18 => 3,
+        _ => 0,
     }
 }
 
@@ -89,7 +88,7 @@ fn calc_hp(stamina: i8, luck: i8, nationality: String) -> i8 {
         _ => hp = roller(2, 4) + calc_modifier(stamina),
     };
 
-    return hp;
+    hp
 }
 
 fn calc_ac(agility: i8, style: &String) -> i8 {
@@ -114,10 +113,10 @@ fn calc_ac(agility: i8, style: &String) -> i8 {
         "Scissor" => ac = ac + hide + agility_mod,
         "Samnite" => ac = ac + large_shield + scale + agility_mod,
         "Cataphractarius" => ac = ac + scale + agility_mod,
-        _ => ac = ac + agility_mod,
+        _ => ac += agility_mod,
     };
 
-    return ac;
+    ac
 }
 
 fn load_notes(style: &String) -> String {
@@ -146,7 +145,7 @@ fn load_notes(style: &String) -> String {
         _ => notes = "".to_string(),
     };
 
-    return notes;
+    notes
 }
 
 fn find_style(luck: i8) -> String {
@@ -180,7 +179,7 @@ fn find_style(luck: i8) -> String {
     }
     let style = styles.get(roll as usize);
 
-    return style.unwrap().to_string();
+    style.unwrap().to_string()
 }
 
 fn gen_character() -> Character {
@@ -214,20 +213,19 @@ fn gen_character() -> Character {
     let ac = calc_ac(agility, &style);
     let notes = load_notes(&style);
 
-    let character = Character {
+    Character {
         nationality: nationality.to_string(),
-        style: style,
-        hp: hp,
-        ac: ac,
-        strength: strength,
-        agility: agility,
-        stamina: stamina,
-        personality: personality,
-        inteligence: inteligence,
-        luck: luck,
-        notes: notes,
-    };
-    return character;
+        style,
+        hp,
+        ac,
+        strength,
+        agility,
+        stamina,
+        personality,
+        inteligence,
+        luck,
+        notes,
+    }
 }
 
 fn main() {
