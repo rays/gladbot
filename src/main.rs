@@ -91,7 +91,7 @@ fn calc_hp(stamina: i8, luck: i8, nationality: String) -> i8 {
     hp
 }
 
-fn calc_ac(agility: i8, style: &String) -> i8 {
+fn calc_ac(agility: i8, style: &str) -> i8 {
     let agility_mod = calc_modifier(agility);
     let mut ac = 10;
 
@@ -103,7 +103,7 @@ fn calc_ac(agility: i8, style: &String) -> i8 {
     let scale = 4;
     let breastplate = 3;
 
-    match style.as_str() {
+    match style {
         "Bestiarius" | "Dimachaerus" => ac = ac + leather + agility_mod,
         "Velites" | "Hoplomachus" | "Eques" => ac = ac + shield + agility_mod,
         "Thracian" => ac = ac + manica + shield + agility_mod,
@@ -119,10 +119,10 @@ fn calc_ac(agility: i8, style: &String) -> i8 {
     ac
 }
 
-fn load_notes(style: &String) -> String {
+fn load_notes(style: &str) -> String {
     let notes: String;
 
-    match style.as_str() {
+    match style {
         "Andabatae" => notes = "Blinded with Short sword and no armor. -4 penalty to attack rolls, move only at half speed, +2 for opponents to hit.".to_string(),
         "Fugitivus" => notes = "Roll 1d4 modified by luck: <1 Unarmed, 1 Club, 2 Dagger, 3 Short Sword, 4 Hand Axe, 5 Spear, 6 Warhammer, 7 Long Sword".to_string(),
         "Pugilatus" => notes = "Cestus (2)".to_string(),
