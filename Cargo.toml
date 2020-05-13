@@ -8,4 +8,4 @@ edition = "2018"
 
 [dependencies]
 rand = "0.7.3"
-serenity = "0.8.4"
+serenity = "0.8.6"
