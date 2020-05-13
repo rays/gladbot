@@ -53,7 +53,8 @@ fn get_quote() -> String {
         "I am required to kill, so I kill. That is enough",
     ];
 
-    quotes.choose(&mut rand::thread_rng()).unwrap().to_string()
+    let quote = quotes.choose(&mut rand::thread_rng());
+    quote.unwrap().to_string()
 }
 
 fn roller(num_die: i8, die_type: i8) -> i8 {
@@ -230,7 +231,7 @@ fn gen_character() -> Character {
 
 fn main() {
     // Login with a bot token from the environment
-    let mut client = Client::new(&env::var("DISCORD_TOKEN").expect("token"), Handler)
+    let mut client = Client::new(&env::var("GLADBOT_TOKEN").expect("token"), Handler)
         .expect("Error creating client");
     client.with_framework(
         StandardFramework::new()
@@ -247,14 +248,22 @@ fn main() {
 #[command]
 fn glad(ctx: &mut Context, msg: &Message) -> CommandResult {
     println!("{} asked me to create a new gladiator!", msg.author.name);
+
     let glad = gen_character();
+    let strength_mod = calc_modifier(glad.strength);
+    let agility_mod = calc_modifier(glad.agility);
+    let stamina_mod = calc_modifier(glad.stamina);
+    let personality_mod = calc_modifier(glad.personality);
+    let inteligence_mod = calc_modifier(glad.inteligence);
+    let luck_mod = calc_modifier(glad.luck);
+
     let out = format! {"A new gladiator has entered the arena!\n\nNationality: {}; Style: {}\nHP: {}; AC: {}\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({})\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
-    glad.strength, calc_modifier(glad.strength),
-    glad.agility, calc_modifier(glad.agility),
-    glad.stamina, calc_modifier(glad.stamina),
-    glad.personality, calc_modifier(glad.personality),
-    glad.inteligence, calc_modifier(glad.inteligence),
-    glad.luck, calc_modifier(glad.luck),
+    glad.strength, strength_mod,
+    glad.agility, agility_mod,
+    glad.stamina, stamina_mod,
+    glad.personality, personality_mod,
+    glad.inteligence, inteligence_mod,
+    glad.luck, luck_mod,
     glad.notes};
     msg.reply(ctx, &out)?;
 
