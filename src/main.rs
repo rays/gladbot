@@ -53,8 +53,8 @@ fn get_quote() -> String {
         "I am required to kill, so I kill. That is enough",
     ];
 
-    let quote = quotes.choose(&mut rand::thread_rng()).unwrap().to_string();
-    return quote;
+    let quote = quotes.choose(&mut rand::thread_rng());
+    quote.unwrap().to_string()
 }
 
 fn roller(num_die: i8, die_type: i8) -> i8 {
@@ -64,21 +64,21 @@ fn roller(num_die: i8, die_type: i8) -> i8 {
 
     while i < num_die {
         let roll = rng.gen_range(1, die_type + 1);
-        result = result + roll;
-        i = i + 1;
+        result += roll;
+        i += 1;
     }
-    return result;
+    result
 }
 
 fn calc_modifier(stat: i8) -> i8 {
     match stat {
-        1..=3 => return -3,
-        4..=5 => return -2,
-        6..=8 => return -1,
-        13..=15 => return 1,
-        16..=17 => return 2,
-        18 => return 3,
-        _ => return 0,
+        1..=3 => -3,
+        4..=5 => -2,
+        6..=8 => -1,
+        13..=15 => 1,
+        16..=17 => 2,
+        18 => 3,
+        _ => 0,
     }
 }
 
@@ -89,10 +89,10 @@ fn calc_hp(stamina: i8, luck: i8, nationality: String) -> i8 {
         _ => hp = roller(2, 4) + calc_modifier(stamina),
     };
 
-    return hp;
+    hp
 }
 
-fn calc_ac(agility: i8, style: &String) -> i8 {
+fn calc_ac(agility: i8, style: &str) -> i8 {
     let agility_mod = calc_modifier(agility);
     let mut ac = 10;
 
@@ -104,7 +104,7 @@ fn calc_ac(agility: i8, style: &String) -> i8 {
     let scale = 4;
     let breastplate = 3;
 
-    match style.as_str() {
+    match style {
         "Bestiarius" | "Dimachaerus" => ac = ac + leather + agility_mod,
         "Velites" | "Hoplomachus" | "Eques" => ac = ac + shield + agility_mod,
         "Thracian" => ac = ac + manica + shield + agility_mod,
@@ -114,16 +114,16 @@ fn calc_ac(agility: i8, style: &String) -> i8 {
         "Scissor" => ac = ac + hide + agility_mod,
         "Samnite" => ac = ac + large_shield + scale + agility_mod,
         "Cataphractarius" => ac = ac + scale + agility_mod,
-        _ => ac = ac + agility_mod,
+        _ => ac += agility_mod,
     };
 
-    return ac;
+    ac
 }
 
-fn load_notes(style: &String) -> String {
+fn load_notes(style: &str) -> String {
     let notes: String;
 
-    match style.as_str() {
+    match style {
         "Andabatae" => notes = "Blinded with Short sword and no armor. -4 penalty to attack rolls, move only at half speed, +2 for opponents to hit.".to_string(),
         "Fugitivus" => notes = "Roll 1d4 modified by luck: <1 Unarmed, 1 Club, 2 Dagger, 3 Short Sword, 4 Hand Axe, 5 Spear, 6 Warhammer, 7 Long Sword".to_string(),
         "Pugilatus" => notes = "Cestus (2)".to_string(),
@@ -146,7 +146,7 @@ fn load_notes(style: &String) -> String {
         _ => notes = "".to_string(),
     };
 
-    return notes;
+    notes
 }
 
 fn find_style(luck: i8) -> String {
@@ -180,7 +180,7 @@ fn find_style(luck: i8) -> String {
     }
     let style = styles.get(roll as usize);
 
-    return style.unwrap().to_string();
+    style.unwrap().to_string()
 }
 
 fn gen_character() -> Character {
@@ -214,25 +214,24 @@ fn gen_character() -> Character {
     let ac = calc_ac(agility, &style);
     let notes = load_notes(&style);
 
-    let character = Character {
+    Character {
         nationality: nationality.to_string(),
-        style: style,
-        hp: hp,
-        ac: ac,
-        strength: strength,
-        agility: agility,
-        stamina: stamina,
-        personality: personality,
-        inteligence: inteligence,
-        luck: luck,
-        notes: notes,
-    };
-    return character;
+        style,
+        hp,
+        ac,
+        strength,
+        agility,
+        stamina,
+        personality,
+        inteligence,
+        luck,
+        notes,
+    }
 }
 
 fn main() {
     // Login with a bot token from the environment
-    let mut client = Client::new(&env::var("DISCORD_TOKEN").expect("token"), Handler)
+    let mut client = Client::new(&env::var("GLADBOT_TOKEN").expect("token"), Handler)
         .expect("Error creating client");
     client.with_framework(
         StandardFramework::new()
@@ -249,14 +248,22 @@ fn main() {
 #[command]
 fn glad(ctx: &mut Context, msg: &Message) -> CommandResult {
     println!("{} asked me to create a new gladiator!", msg.author.name);
+
     let glad = gen_character();
+    let strength_mod = calc_modifier(glad.strength);
+    let agility_mod = calc_modifier(glad.agility);
+    let stamina_mod = calc_modifier(glad.stamina);
+    let personality_mod = calc_modifier(glad.personality);
+    let inteligence_mod = calc_modifier(glad.inteligence);
+    let luck_mod = calc_modifier(glad.luck);
+
     let out = format! {"A new gladiator has entered the arena!\n\nNationality: {}; Style: {}\nHP: {}; AC: {}\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({})\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
-    glad.strength, calc_modifier(glad.strength),
-    glad.agility, calc_modifier(glad.agility),
-    glad.stamina, calc_modifier(glad.stamina),
-    glad.personality, calc_modifier(glad.personality),
-    glad.inteligence, calc_modifier(glad.inteligence),
-    glad.luck, calc_modifier(glad.luck),
+    glad.strength, strength_mod,
+    glad.agility, agility_mod,
+    glad.stamina, stamina_mod,
+    glad.personality, personality_mod,
+    glad.inteligence, inteligence_mod,
+    glad.luck, luck_mod,
     glad.notes};
     msg.reply(ctx, &out)?;
 
