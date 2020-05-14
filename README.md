@@ -1,3 +1,4 @@
 # gladbot
 
-![rust](https://github.com/rays/gladbot/workflows/Rust/badge.svg?branch=master)
+![build](https://github.com/rays/gladbot/workflows/Rust/build.svg?branch=master)
+![clippy](https://github.com/rays/gladbot/workflows/Rust/clippy.svg?branch=master)

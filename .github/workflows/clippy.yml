@@ -1,5 +1,7 @@
+name: Clippy
+
 on: push
-name: Clippy check
+
 jobs:
   clippy_check:
     runs-on: ubuntu-latest
