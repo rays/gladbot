@@ -54,7 +54,7 @@ fn get_quote() -> String {
     ];
 
     let quote = quotes.choose(&mut rand::thread_rng());
-    quote.unwrap().to_string()
+    (*quote.unwrap()).to_string()
 }
 
 fn roller(num_die: i8, die_type: i8) -> i8 {
@@ -180,7 +180,7 @@ fn find_style(luck: i8) -> String {
     }
     let style = styles.get(roll as usize);
 
-    style.unwrap().to_string()
+    (*style.unwrap()).to_string()
 }
 
 fn gen_character() -> Character {
@@ -210,12 +210,12 @@ fn gen_character() -> Character {
 
     let nationality = nationalities.choose(&mut rand::thread_rng()).unwrap();
     let style = find_style(luck);
-    let hp = calc_hp(stamina, luck, nationality.to_string());
+    let hp = calc_hp(stamina, luck, (*nationality).to_string());
     let ac = calc_ac(agility, &style);
     let notes = load_notes(&style);
 
     Character {
-        nationality: nationality.to_string(),
+        nationality: (*nationality).to_string(),
         style,
         hp,
         ac,

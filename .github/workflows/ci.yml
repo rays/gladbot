@@ -4,13 +4,16 @@ on: [push]
 
 jobs:
   build:
+    runs-on: ${{ matrix.os }}
+    matrix:
+        os: [ubuntu-latest]
+        rust: [stable, nightly]
 
-    runs-on: ubuntu-latest
     steps:
     - uses: hecrj/setup-rust-action@v1.2.0
       with:
         rust-version: ${{ matrix.rust }}
-        components: rustfmt  # Comma-separated
+        components: rustfmt
     - uses: actions/checkout@v1
     - name: fmt check
       run: cargo fmt --all -- --check
