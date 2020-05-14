@@ -4,10 +4,12 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    matrix:
+    strategy:
+      matrix:
         os: [ubuntu-latest]
         rust: [stable, nightly]
+    
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: hecrj/setup-rust-action@v1.2.0
