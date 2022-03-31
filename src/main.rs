@@ -14,13 +14,17 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use std::env;
 
+use rusqlite::{params, Connection, Result};
+
 #[derive(Debug)]
 
 struct Handler;
 
 impl EventHandler for Handler {}
+#[derive(Clone)]
 
 struct Character {
+    name: String,
     nationality: String,
     style: String,
     hp: i8,
@@ -135,7 +139,7 @@ fn load_notes(style: &str) -> String {
         "Murmillo" => notes = "Short sword, manica, large shield, helmet".to_string(),
         "Dimachaerus" => notes = "Two long swords, leather armor, helmet".to_string(),
         "Provacator" => notes = "Short sword, breastplate, helmet, large shield".to_string(),
-        "Laquearius" => notes = "Dagger, lasso/whip/grappling hook, manica".to_string(),   
+        "Laquearius" => notes = "Dagger, lasso/whip/grappling hook, manica".to_string(),
         "Scissor" => notes = "Short sword, hide armor, scissor".to_string(),
         "Samnite" => notes = "Short sword, large shield, scale mail".to_string(),
         "Cataphractarius" => notes = "Polearm and scale mail".to_string(),
@@ -183,7 +187,42 @@ fn find_style(luck: i8) -> String {
     (*style.unwrap()).to_string()
 }
 
+fn save_character(character: Character) -> Result<()> {
+    let conn = Connection::open("/tmp/glad.db")?;
+
+    conn.execute(
+        "
+    CREATE TABLE IF NOT EXISTS glads (
+        id INTEGER PRIMARY KEY
+        name STRING,
+        hp INTEGER,
+        strenght INTEGER,
+        agility INTEGER,
+        luck INTEGER,
+        ac INTEGER,
+        added datetime default current_timestamp
+    )",
+        [],
+    )?;
+
+    conn.execute(
+        "INSERT INTO glads VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        params![
+            character.name,
+            character.hp,
+            character.strength,
+            character.agility,
+            character.luck,
+            character.ac
+        ],
+    )?;
+
+    Ok(())
+}
+
 fn gen_character() -> Character {
+    // let rng = RNG::new(&Language::Roman).unwrap();
+
     let nationalities = [
         "Roman",
         "Carthaginian",
@@ -208,6 +247,8 @@ fn gen_character() -> Character {
     let inteligence = roller(3, 6);
     let luck = roller(3, 6);
 
+    // let name = rng.generate_name();
+    let name = "Bob".to_string();
     let nationality = nationalities.choose(&mut rand::thread_rng()).unwrap();
     let style = find_style(luck);
     let hp = calc_hp(stamina, luck, (*nationality).to_string());
@@ -215,6 +256,7 @@ fn gen_character() -> Character {
     let notes = load_notes(&style);
 
     Character {
+        name,
         nationality: (*nationality).to_string(),
         style,
         hp,
@@ -257,7 +299,10 @@ fn glad(ctx: &mut Context, msg: &Message) -> CommandResult {
     let inteligence_mod = calc_modifier(glad.inteligence);
     let luck_mod = calc_modifier(glad.luck);
 
-    let out = format! {"A new gladiator has entered the arena!\n\nNationality: {}; Style: {}\nHP: {}; AC: {}\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({})\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
+    save_character(glad.clone())?;
+
+    let out = format! {"{} has entered the arena!\n\nNationality: {}; Style: {}\nHP: {}; AC: {}\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({})\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
+    glad.name,
     glad.strength, strength_mod,
     glad.agility, agility_mod,
     glad.stamina, stamina_mod,
