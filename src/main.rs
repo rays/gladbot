@@ -190,22 +190,21 @@ fn find_style(luck: i8) -> String {
 fn save_character(character: Character) -> Result<()> {
     let conn = Connection::open("/tmp/glad.db")?;
 
-    let result = conn.execute(
+    let _result = conn.execute(
         "
     CREATE TABLE IF NOT EXISTS glads (
-        id INTEGER PRIMARY KEY
+        id INTEGER PRIMARY KEY,
         name STRING,
         hp INTEGER,
         strenght INTEGER,
         agility INTEGER,
         luck INTEGER,
         ac INTEGER,
-        added datetime default current_timestamp
     )",
         [],
     );
 
-    let result = conn.execute(
+    let _result = conn.execute(
         "INSERT INTO glads VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
         params![
             character.name,
