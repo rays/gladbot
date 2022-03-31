@@ -247,7 +247,7 @@ fn gen_character() -> Character {
     let luck = roller(3, 6);
 
     // let name = rng.generate_name();
-    let name = "Bob".to_string();
+    let name = "Bob";
     let nationality = nationalities.choose(&mut rand::thread_rng()).unwrap();
     let style = find_style(luck);
     let hp = calc_hp(stamina, luck, (*nationality).to_string());
@@ -255,8 +255,8 @@ fn gen_character() -> Character {
     let notes = load_notes(&style);
 
     Character {
-        name,
-        nationality: (*nationality).to_string(),
+        name: name.to_string(),
+        nationality: nationality.to_string(),
         style,
         hp,
         ac,
