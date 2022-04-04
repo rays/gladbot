@@ -324,7 +324,7 @@ fn gen_character() -> Character {
 #[tokio::main]
 async fn main() {
     let framework = StandardFramework::new()
-        .configure(|c| c.prefix("~")) // set the bot's prefix to "~"
+        .configure(|c| c.prefix("!")) // set the bot's prefix to "~"
         .group(&GENERAL_GROUP);
 
     // Login with a bot token from the environment
