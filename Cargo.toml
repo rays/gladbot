@@ -7,6 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.7.3"
-serenity = "0.8.6"
+rand = "0.8.5"
+serenity = "0.10.10"
 rusqlite = "0.27.0"
+random_name_generator = "0.1.2"
+tokio = { version = "1.17.0", features = ["macros", "rt-multi-thread"] }

@@ -1,28 +1,30 @@
-use serenity::client::Client;
+use serenity::async_trait;
+use serenity::client::{Client, Context, EventHandler};
 use serenity::framework::standard::{
     macros::{command, group},
     CommandResult, StandardFramework,
 };
 use serenity::model::channel::Message;
-use serenity::prelude::{Context, EventHandler};
-
-#[group]
-#[commands(glad, taunt)]
-struct General;
 
 use rand::seq::SliceRandom;
 use rand::Rng;
 use std::env;
 
+use rnglib::{Language, RNG};
 use rusqlite::{params, Connection, Result};
 
-#[derive(Debug)]
+use tokio;
 
+#[group]
+#[commands(glad, taunt, fight)]
+
+struct General;
 struct Handler;
 
+#[async_trait]
 impl EventHandler for Handler {}
-#[derive(Clone)]
 
+#[derive(Clone, Debug)]
 struct Character {
     name: String,
     nationality: String,
@@ -36,25 +38,17 @@ struct Character {
     inteligence: i8,
     luck: i8,
     notes: String,
+    initiative: i8,
 }
 
 fn get_quote() -> String {
     let quotes = [
-        "I Will Have My Vengeance",
         "Death smiles at us all. All a man can do is smile back",
         "Only a Famous Death Will Do",
         "Win the Crowd and Win the Freedom",
         "Honor Rome",
-        "I Do What I Want to Do",
-        "I Kill Because I'm Required",
         "Honor Maximus",
         "At my signal, unleash hell",
-        "The frost, it sometimes makes the blade stick",
-        "Nothing happens to anyone that he is not fitted by nature to bear",
-        "What we do in life... echoes in eternity",
-        "Fear and wonder, a powerful combination",
-        "When a man sees his end... he wants to know there was some purpose to his life",
-        "I am required to kill, so I kill. That is enough",
     ];
 
     let quote = quotes.choose(&mut rand::thread_rng());
@@ -67,7 +61,7 @@ fn roller(num_die: i8, die_type: i8) -> i8 {
     let mut i = 0;
 
     while i < num_die {
-        let roll = rng.gen_range(1, die_type + 1);
+        let roll = rng.gen_range(1..die_type + 1);
         result += roll;
         i += 1;
     }
@@ -187,40 +181,96 @@ fn find_style(luck: i8) -> String {
     (*style.unwrap()).to_string()
 }
 
-fn save_character(character: Character) -> Result<()> {
-    let conn = Connection::open("/tmp/glad.db")?;
+fn get_characters(num: i8) -> Result<Vec<Character>> {
+    let db = Connection::open("/tmp/glad.db")?;
 
-    let _result = conn.execute(
+    let mut stmt = db.prepare("SELECT * FROM glads ORDER BY id DESC LIMIT ?1")?;
+    let rows = stmt.query_map([num], |row| {
+        Ok(Character {
+            name: row.get(1).unwrap(),
+            nationality: row.get(2).unwrap(),
+            style: row.get(3).unwrap(),
+            hp: row.get(4).unwrap(),
+            ac: row.get(5).unwrap(),
+            strength: row.get(6).unwrap(),
+            agility: row.get(7).unwrap(),
+            stamina: row.get(8).unwrap(),
+            personality: row.get(9).unwrap(),
+            inteligence: row.get(10).unwrap(),
+            luck: row.get(11).unwrap(),
+            notes: row.get(12).unwrap(),
+            initiative: row.get(13).unwrap(),
+        })
+    })?;
+
+    let mut characters = Vec::new();
+    for row in rows {
+        let character = row.unwrap();
+        characters.push(character);
+    }
+
+    Ok(characters)
+}
+
+fn save_character(character: Character) -> Result<()> {
+    let db = Connection::open("/tmp/glad.db")?;
+
+    let _result = match db.execute_batch(
         "
     CREATE TABLE IF NOT EXISTS glads (
-        id INTEGER PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name STRING,
+        nationality STRING,
+        style STRING,
         hp INTEGER,
-        strenght INTEGER,
-        agility INTEGER,
-        luck INTEGER,
         ac INTEGER,
-    )",
-        [],
-    );
+        strength INTEGER,
+        agility INTEGER,
+        stamina INTEGER,
+        personality INTEGER,
+        inteligence INTEGER,
+        luck INTEGER,
+        notes STRING,
+        initiative INTEGER
+    );",
+    ) {
+        Ok(result) => result,
+        Err(e) => {
+            println!("error creating db: {}", e);
+            return Err(e);
+        }
+    };
 
-    let _result = conn.execute(
-        "INSERT INTO glads VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+    let _result = match db.execute(
+        "INSERT INTO glads VALUES (NULL, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
         params![
             character.name,
+            character.nationality,
+            character.style,
             character.hp,
+            character.ac,
             character.strength,
             character.agility,
+            character.stamina,
+            character.personality,
+            character.inteligence,
             character.luck,
-            character.ac
+            character.notes,
+            character.initiative,
         ],
-    );
+    ) {
+        Ok(result) => result,
+        Err(e) => {
+            println!("error saving record: {}", e);
+            return Err(e);
+        }
+    };
 
     Ok(())
 }
 
 fn gen_character() -> Character {
-    // let rng = RNG::new(&Language::Roman).unwrap();
+    let rng = RNG::new(&Language::Roman).unwrap();
 
     let nationalities = [
         "Roman",
@@ -246,17 +296,17 @@ fn gen_character() -> Character {
     let inteligence = roller(3, 6);
     let luck = roller(3, 6);
 
-    // let name = rng.generate_name();
-    let name = "Bob";
+    let name = rng.generate_name();
     let nationality = nationalities.choose(&mut rand::thread_rng()).unwrap();
     let style = find_style(luck);
     let hp = calc_hp(stamina, luck, (*nationality).to_string());
     let ac = calc_ac(agility, &style);
     let notes = load_notes(&style);
+    let initiative = 0;
 
     Character {
         name: name.to_string(),
-        nationality: nationality.to_string(),
+        nationality: (*nationality).to_string(),
         style,
         hp,
         ac,
@@ -267,27 +317,32 @@ fn gen_character() -> Character {
         inteligence,
         luck,
         notes,
+        initiative,
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    let framework = StandardFramework::new()
+        .configure(|c| c.prefix("~")) // set the bot's prefix to "~"
+        .group(&GENERAL_GROUP);
+
     // Login with a bot token from the environment
-    let mut client = Client::new(&env::var("GLADBOT_TOKEN").expect("token"), Handler)
+    let token = env::var("GLADBOT_TOKEN").expect("token");
+    let mut client = Client::builder(token)
+        .event_handler(Handler)
+        .framework(framework)
+        .await
         .expect("Error creating client");
-    client.with_framework(
-        StandardFramework::new()
-            .configure(|c| c.prefix("!")) // set the bot's prefix to "~"
-            .group(&GENERAL_GROUP),
-    );
 
     // start listening for events by starting a single shard
-    if let Err(why) = client.start() {
+    if let Err(why) = client.start().await {
         println!("An error occurred while running the client: {:?}", why);
     }
 }
 
 #[command]
-fn glad(ctx: &mut Context, msg: &Message) -> CommandResult {
+async fn glad(ctx: &Context, msg: &Message) -> CommandResult {
     println!("{} asked me to create a new gladiator!", msg.author.name);
 
     let glad = gen_character();
@@ -300,8 +355,9 @@ fn glad(ctx: &mut Context, msg: &Message) -> CommandResult {
 
     save_character(glad.clone())?;
 
-    let out = format! {"{} has entered the arena!\n\nNationality: {}; Style: {}\nHP: {}; AC: {}\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({})\nNotes: {}", glad.nationality, glad.style, glad.hp, glad.ac,
-    glad.name,
+    let out = format! {"Gladiator {} has entered the arena!\n\nNationality: {}; Style: {}\nHP: {}; AC: {}\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({})\nNotes: {}",
+    glad.name, glad.nationality,
+    glad.style, glad.hp, glad.ac,
     glad.strength, strength_mod,
     glad.agility, agility_mod,
     glad.stamina, stamina_mod,
@@ -309,16 +365,81 @@ fn glad(ctx: &mut Context, msg: &Message) -> CommandResult {
     glad.inteligence, inteligence_mod,
     glad.luck, luck_mod,
     glad.notes};
-    msg.reply(ctx, &out)?;
+    msg.reply(ctx, &out).await?;
+    println!("{}", &out);
 
     Ok(())
 }
 
 #[command]
-fn taunt(ctx: &mut Context, msg: &Message) -> CommandResult {
+async fn taunt(ctx: &Context, msg: &Message) -> CommandResult {
     println!("{} asked me to taunt them!", msg.author.name);
     let quote = get_quote().to_uppercase();
-    msg.reply(ctx, &quote)?;
+    msg.reply(ctx, &quote).await?;
+
+    Ok(())
+}
+
+#[command]
+async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
+    let command = format!(
+        "{} commands that two gladiators fight to the death!",
+        msg.author.name
+    );
+    msg.reply(ctx.clone(), &command).await?;
+
+    let quote = get_quote().to_uppercase();
+    msg.reply(ctx.clone(), &quote).await?;
+    let characters = get_characters(2).unwrap();
+
+    // Roll for initiative
+    let mut gladiators = Vec::new();
+    for mut glad in characters.clone() {
+        glad.initiative = roller(1, 20) + calc_modifier(glad.agility);
+        gladiators.push(glad)
+    }
+    gladiators.sort_by_key(|d| d.initiative);
+    gladiators.reverse();
+
+    let mut attacker = gladiators.pop().unwrap();
+    let mut opponent = gladiators.pop().unwrap();
+
+    loop {
+        let status = format!("{} attacks!", attacker.name);
+        msg.reply(ctx.clone(), &status).await?;
+        let to_hit = roller(1, 20) + calc_modifier(attacker.strength);
+        let status = format!("Attack roll {} against AC {}", to_hit, opponent.ac);
+        msg.reply(ctx.clone(), &status).await?;
+        if to_hit >= opponent.ac {
+            let dmg = roller(1, 2) + calc_modifier(attacker.strength);
+            let status = format!("{} hits for {} damage!", attacker.name, dmg);
+            msg.reply(ctx.clone(), &status).await?;
+            opponent.hp = opponent.hp - dmg;
+            println!("Current HP: {}", opponent.hp);
+            if opponent.hp <= 0 {
+                let status = format!("{} is has been slain!", opponent.name);
+                msg.reply(ctx.clone(), &status).await?;
+                break;
+            }
+        }
+
+        let status = format!("{} attacks!", opponent.name);
+        msg.reply(ctx.clone(), &status).await?;
+        let to_hit = roller(1, 20) + calc_modifier(opponent.strength);
+        let status = format!("Attack roll {} against AC {}", to_hit, attacker.ac);
+        msg.reply(ctx.clone(), &status).await?;
+        if to_hit >= attacker.ac {
+            let dmg = roller(1, 3) + calc_modifier(opponent.strength);
+            let status = format!("{} hits for {} damage!", opponent.name, dmg);
+            msg.reply(ctx.clone(), &status).await?;
+            attacker.hp = attacker.hp - dmg;
+            if attacker.hp <= 0 {
+                let status = format!("{} is has been slain!", attacker.name);
+                msg.reply(ctx.clone(), &status).await?;
+                break;
+            }
+        }
+    }
 
     Ok(())
 }
