@@ -6,6 +6,9 @@ use serenity::framework::standard::{
 };
 use serenity::model::channel::Message;
 
+use handlebars::Handlebars;
+use std::collections::HashMap;
+
 use rand::seq::SliceRandom;
 use rand::Rng;
 use std::env;
@@ -53,6 +56,28 @@ fn get_quote() -> String {
 
     let quote = quotes.choose(&mut rand::thread_rng());
     (*quote.unwrap()).to_string()
+}
+
+fn get_hit_msg(weapon: String, attacker: String, opponent: String) -> String {
+    let hit_msgs = [
+        "{{ attacker }}'s {{ weapon }} strikes across {{ opponent }}'s chest, leaving a long, shallow gash.",
+        "{{ opponent }} blocks {{ attacker}}'s {{ weapon }} and {{ attacker }} quickly lean into the block and smash the haft into whatever approximates for a mouth on {{ opponent }}.",
+        "{{ attacker }}'s {{ weapon }} digs deep into the gut of {{ opponent }}, who groans painfully before expelling bloody spittle onto the ground.",
+        "{{ attacker }}'s powerful swipe thier {{ weapon }} sends {{ opponent }}'s index finger flying."
+    ];
+
+    let source = hit_msgs.choose(&mut rand::thread_rng());
+    let source = (*source.unwrap()).to_string();
+
+    let mut handlebars = Handlebars::new();
+    handlebars.register_template_string("hit", source).unwrap();
+
+    let mut data = HashMap::new();
+    data.insert("weapon", weapon);
+    data.insert("attacker", attacker);
+    data.insert("opponent", opponent);
+
+    format!("{}", handlebars.render("hit", &data).unwrap())
 }
 
 fn roller(num_die: i8, die_type: i8) -> i8 {
@@ -401,43 +426,42 @@ async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
     gladiators.sort_by_key(|d| d.initiative);
     gladiators.reverse();
 
-    let mut attacker = gladiators.pop().unwrap();
-    let mut opponent = gladiators.pop().unwrap();
+    let mut glad1 = gladiators.pop().unwrap();
+    let mut glad2 = gladiators.pop().unwrap();
 
     loop {
-        let status = format!("{} attacks!", attacker.name);
-        msg.reply(ctx.clone(), &status).await?;
-        let to_hit = roller(1, 20) + calc_modifier(attacker.strength);
-        let status = format!("Attack roll {} against AC {}", to_hit, opponent.ac);
-        msg.reply(ctx.clone(), &status).await?;
-        if to_hit >= opponent.ac {
-            let dmg = roller(1, 2) + calc_modifier(attacker.strength);
-            let status = format!("{} hits for {} damage!", attacker.name, dmg);
+        println!("{}'s Current HP: {}", glad2.name, glad2.hp);
+        let to_hit = roller(1, 20) + calc_modifier(glad1.strength);
+        if to_hit >= glad2.ac {
+            let dmg = roller(1, 2) + calc_modifier(glad1.strength);
+            let status = get_hit_msg("fist".to_string(), glad1.name.clone(), glad2.name.clone());
             msg.reply(ctx.clone(), &status).await?;
-            opponent.hp = opponent.hp - dmg;
-            println!("Current HP: {}", opponent.hp);
-            if opponent.hp <= 0 {
-                let status = format!("{} is has been slain!", opponent.name);
+            glad2.hp = glad2.hp - dmg;
+            if glad2.hp <= 0 {
+                let status = format!("{} is has been slain!", glad2.name);
                 msg.reply(ctx.clone(), &status).await?;
                 break;
             }
+        } else {
+            let status = format!("{} misses their attack", glad1.name);
+            msg.reply(ctx.clone(), &status).await?;
         }
 
-        let status = format!("{} attacks!", opponent.name);
-        msg.reply(ctx.clone(), &status).await?;
-        let to_hit = roller(1, 20) + calc_modifier(opponent.strength);
-        let status = format!("Attack roll {} against AC {}", to_hit, attacker.ac);
-        msg.reply(ctx.clone(), &status).await?;
-        if to_hit >= attacker.ac {
-            let dmg = roller(1, 3) + calc_modifier(opponent.strength);
-            let status = format!("{} hits for {} damage!", opponent.name, dmg);
+        println!("{}'s Current HP: {}", glad1.name, glad2.hp);
+        let to_hit = roller(1, 20) + calc_modifier(glad2.strength);
+        if to_hit >= glad1.ac {
+            let dmg = roller(1, 2) + calc_modifier(glad2.strength);
+            let status = get_hit_msg("fist".to_string(), glad2.name.clone(), glad1.name.clone());
             msg.reply(ctx.clone(), &status).await?;
-            attacker.hp = attacker.hp - dmg;
-            if attacker.hp <= 0 {
-                let status = format!("{} is has been slain!", attacker.name);
+            glad1.hp = glad1.hp - dmg;
+            if glad2.hp <= 0 {
+                let status = format!("{} is has been slain!", glad1.name);
                 msg.reply(ctx.clone(), &status).await?;
                 break;
             }
+        } else {
+            let status = format!("{} misses their attack", glad2.name);
+            msg.reply(ctx.clone(), &status).await?;
         }
     }
 
