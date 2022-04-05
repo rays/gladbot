@@ -42,6 +42,116 @@ struct Character {
     luck: i8,
     notes: String,
     initiative: i8,
+    weapon: Weapon,
+}
+
+#[derive(Clone, Debug)]
+struct Weapon {
+    name: String,
+    damage_die: i8,
+    is_melee: bool,
+}
+
+fn get_weapon(weapon_key: String) -> Weapon {
+    let mut weapon_table = HashMap::new();
+
+    weapon_table.insert(
+        "Fists".to_string(),
+        Weapon {
+            name: "Fists".to_string(),
+            damage_die: 3,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Sica".to_string(),
+        Weapon {
+            name: "Sica".to_string(),
+            damage_die: 5,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Warhammer".to_string(),
+        Weapon {
+            name: "Warhammer".to_string(),
+            damage_die: 8,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Short Sword".to_string(),
+        Weapon {
+            name: "Short Sword".to_string(),
+            damage_die: 6,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Cestus".to_string(),
+        Weapon {
+            name: "Cestus".to_string(),
+            damage_die: 3,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Hand Axe".to_string(),
+        Weapon {
+            name: "Hand Axe".to_string(),
+            damage_die: 6,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Spear".to_string(),
+        Weapon {
+            name: "Spear".to_string(),
+            damage_die: 8,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Javelin".to_string(),
+        Weapon {
+            name: "Javelin".to_string(),
+            damage_die: 6,
+            is_melee: false,
+        },
+    );
+    weapon_table.insert(
+        "Trident".to_string(),
+        Weapon {
+            name: "Trident".to_string(),
+            damage_die: 7,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Long Sword".to_string(),
+        Weapon {
+            name: "Long Sword".to_string(),
+            damage_die: 8,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Polearm".to_string(),
+        Weapon {
+            name: "Polearm".to_string(),
+            damage_die: 10,
+            is_melee: true,
+        },
+    );
+    weapon_table.insert(
+        "Shortbow".to_string(),
+        Weapon {
+            name: "Shortbow".to_string(),
+            damage_die: 6,
+            is_melee: false,
+        },
+    );
+    weapon_table[&weapon_key].clone()
 }
 
 fn get_quote() -> String {
@@ -58,12 +168,12 @@ fn get_quote() -> String {
     (*quote.unwrap()).to_string()
 }
 
-fn get_hit_msg(weapon: String, attacker: String, opponent: String) -> String {
+fn get_hit_msg(weapon: String, attacker: String, opponent: String, damage: i8) -> String {
     let hit_msgs = [
-        "{{ attacker }}'s {{ weapon }} strikes across {{ opponent }}'s chest, leaving a long, shallow gash.",
-        "{{ opponent }} blocks {{ attacker}}'s {{ weapon }} and {{ attacker }} quickly lean into the block and smash the haft into whatever approximates for a mouth on {{ opponent }}.",
-        "{{ attacker }}'s {{ weapon }} digs deep into the gut of {{ opponent }}, who groans painfully before expelling bloody spittle onto the ground.",
-        "{{ attacker }}'s powerful swipe thier {{ weapon }} sends {{ opponent }}'s index finger flying."
+        "{{ attacker }}'s {{ weapon }} strikes across {{ opponent }}'s chest, leaving a long, shallow gash [{{ damage }}]",
+        "{{ opponent }} blocks {{ attacker}}'s {{ weapon }} and {{ attacker }} quickly lean into the block and smash the haft into whatever approximates for a mouth on {{ opponent }} [{{ damage }}]",
+        "{{ attacker }}'s {{ weapon }} digs deep into the gut of {{ opponent }}, who groans painfully before expelling bloody spittle onto the ground [{{ damage }}]",
+        "{{ attacker }}'s powerful swipe thier {{ weapon }} sends {{ opponent }}'s index finger flying [{{ damage }}]"
     ];
 
     let source = hit_msgs.choose(&mut rand::thread_rng());
@@ -76,6 +186,7 @@ fn get_hit_msg(weapon: String, attacker: String, opponent: String) -> String {
     data.insert("weapon", weapon);
     data.insert("attacker", attacker);
     data.insert("opponent", opponent);
+    data.insert("damage", damage.to_string());
 
     format!("{}", handlebars.render("hit", &data).unwrap())
 }
@@ -141,6 +252,51 @@ fn calc_ac(agility: i8, style: &str) -> i8 {
     };
 
     ac
+}
+
+fn load_weapon(style: &str) -> Weapon {
+    let weapon: Weapon;
+
+    match style {
+        "Andabatae" => weapon = get_weapon("Short Sword".to_string()),
+        "Fugitivus" => {
+            let possible_weapons = [
+                "Fists",
+                "Club",
+                "Dagger",
+                "Short Sword",
+                "Hand Axe",
+                "Spear",
+                "Warhammer",
+                "Long Sword",
+            ];
+            let choice = possible_weapons.choose(&mut rand::thread_rng()).unwrap();
+            weapon = get_weapon(choice.to_string());
+        }
+        "Pugilatus" => weapon = get_weapon("Cestus".to_string()),
+        "Bestiarius" => weapon = get_weapon("Hand Axe,".to_string()),
+        "Velites" => weapon = get_weapon("Javelin".to_string()),
+        "Thracian" => {
+            let possible_weapons = ["Dagger", "Sica", "Short Sword"];
+            let choice = possible_weapons.choose(&mut rand::thread_rng()).unwrap();
+            weapon = get_weapon(choice.to_string());
+        }
+        "Hoplomachus" => weapon = get_weapon("Spear".to_string()),
+        "Retiarius" => weapon = get_weapon("Trident".to_string()),
+        "Murmillo" => weapon = get_weapon("Short sword".to_string()),
+        "Dimachaerus" => weapon = get_weapon("Long Swords".to_string()),
+        "Provacator" => weapon = get_weapon("Short Sword".to_string()),
+        "Laquearius" => weapon = get_weapon("Dagger,".to_string()),
+        "Scissor" => weapon = get_weapon("Short Sword".to_string()),
+        "Samnite" => weapon = get_weapon("Short Sword".to_string()),
+        "Cataphractarius" => weapon = get_weapon("Polearm".to_string()),
+        // "Rudiarius" => notes = "2d100 GP starting funds for initial weapons/armor".to_string(),
+        "Sagittarius" => weapon = get_weapon("Shortbow".to_string()),
+        "Eques" => weapon = get_weapon("Javelin".to_string()),
+        "Essedarius" => weapon = get_weapon("Spear".to_string()),
+        _ => weapon = get_weapon("Fists".to_string()),
+    };
+    weapon
 }
 
 fn load_notes(style: &str) -> String {
@@ -225,6 +381,7 @@ fn get_characters(num: i8) -> Result<Vec<Character>> {
             luck: row.get(11).unwrap(),
             notes: row.get(12).unwrap(),
             initiative: row.get(13).unwrap(),
+            weapon: get_weapon(row.get(14).unwrap()),
         })
     })?;
 
@@ -256,7 +413,8 @@ fn save_character(character: Character) -> Result<()> {
         inteligence INTEGER,
         luck INTEGER,
         notes STRING,
-        initiative INTEGER
+        initiative INTEGER,
+        weapon_key STRING
     );",
     ) {
         Ok(result) => result,
@@ -267,7 +425,7 @@ fn save_character(character: Character) -> Result<()> {
     };
 
     let _result = match db.execute(
-        "INSERT INTO glads VALUES (NULL, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+        "INSERT INTO glads VALUES (NULL, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
         params![
             character.name,
             character.nationality,
@@ -282,6 +440,7 @@ fn save_character(character: Character) -> Result<()> {
             character.luck,
             character.notes,
             character.initiative,
+            character.weapon.name
         ],
     ) {
         Ok(result) => result,
@@ -328,6 +487,7 @@ fn gen_character() -> Character {
     let ac = calc_ac(agility, &style);
     let notes = load_notes(&style);
     let initiative = 0;
+    let weapon = load_weapon(&style);
 
     Character {
         name: name.to_string(),
@@ -343,6 +503,7 @@ fn gen_character() -> Character {
         luck,
         notes,
         initiative,
+        weapon,
     }
 }
 
@@ -430,39 +591,63 @@ async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
     let mut glad2 = gladiators.pop().unwrap();
 
     loop {
+        println!("{}'s Current HP: {}", glad1.name, glad1.hp);
         println!("{}'s Current HP: {}", glad2.name, glad2.hp);
-        println!("{}'s Current HP: {}", glad1.name, glad2.hp);
 
-        let to_hit = roller(1, 20) + calc_modifier(glad1.strength);
+        // Gladiator 1
+        let mut attack_modifier = calc_modifier(glad1.strength);
+        let mut dmg_modifier = calc_modifier(glad1.strength);
+        if !glad1.weapon.is_melee {
+            attack_modifier = calc_modifier(glad1.agility);
+            dmg_modifier = 0;
+        }
+        let to_hit = roller(1, 20) + attack_modifier;
         if to_hit >= glad2.ac {
-            let dmg = roller(1, 2) + calc_modifier(glad1.strength);
-            let status = get_hit_msg("fist".to_string(), glad1.name.clone(), glad2.name.clone());
+            let dmg = roller(1, glad1.weapon.damage_die) + dmg_modifier;
+            let status = get_hit_msg(
+                glad1.weapon.name.clone(),
+                glad1.name.clone(),
+                glad2.name.clone(),
+                dmg,
+            );
             msg.reply(ctx.clone(), &status).await?;
             glad2.hp = glad2.hp - dmg;
+            if glad2.hp <= 0 {
+                let status = format!("{} has been defeated in battle!", glad1.name);
+                msg.reply(ctx.clone(), &status).await?;
+                break;
+            }
         } else {
             let status = format!("{} misses their attack", glad1.name);
             msg.reply(ctx.clone(), &status).await?;
         }
 
-        let to_hit = roller(1, 20) + calc_modifier(glad2.strength);
+        // Gladiator 2
+        let mut attack_modifier = calc_modifier(glad2.strength);
+        let mut dmg_modifier = calc_modifier(glad2.strength);
+        if !glad2.weapon.is_melee {
+            attack_modifier = calc_modifier(glad2.agility);
+            dmg_modifier = 0;
+        }
+        let to_hit = roller(1, 20) + attack_modifier;
         if to_hit >= glad1.ac {
-            let dmg = roller(1, 2) + calc_modifier(glad2.strength);
-            let status = get_hit_msg("fist".to_string(), glad2.name.clone(), glad1.name.clone());
+            let dmg = roller(1, glad2.weapon.damage_die) + dmg_modifier;
+            let status = get_hit_msg(
+                glad2.weapon.name.clone(),
+                glad2.name.clone(),
+                glad1.name.clone(),
+                dmg,
+            );
             msg.reply(ctx.clone(), &status).await?;
             glad1.hp = glad1.hp - dmg;
+            if glad1.hp <= 0 {
+                let status = format!("{} has been defeated in battle!", glad2.name);
+                msg.reply(ctx.clone(), &status).await?;
+                break;
+            }
         } else {
             let status = format!("{} misses their attack", glad2.name);
             msg.reply(ctx.clone(), &status).await?;
-        }
-
-        if glad1.hp < 0 {
-            let status = format!("{} has been defeated in battle!", glad1.name);
-            msg.reply(ctx.clone(), &status).await?;
-            break;
-        } else if glad2.hp < 0 {
-            let status = format!("{} has been defeated in battle!", glad2.name);
-            msg.reply(ctx.clone(), &status).await?;
-            break;
         }
     }
 
