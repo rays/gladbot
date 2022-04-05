@@ -437,11 +437,6 @@ async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
             let status = get_hit_msg("fist".to_string(), glad1.name.clone(), glad2.name.clone());
             msg.reply(ctx.clone(), &status).await?;
             glad2.hp = glad2.hp - dmg;
-            if glad2.hp <= 0 {
-                let status = format!("{} is has been slain!", glad2.name);
-                msg.reply(ctx.clone(), &status).await?;
-                break;
-            }
         } else {
             let status = format!("{} misses their attack", glad1.name);
             msg.reply(ctx.clone(), &status).await?;
@@ -454,14 +449,19 @@ async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
             let status = get_hit_msg("fist".to_string(), glad2.name.clone(), glad1.name.clone());
             msg.reply(ctx.clone(), &status).await?;
             glad1.hp = glad1.hp - dmg;
-            if glad2.hp <= 0 {
-                let status = format!("{} is has been slain!", glad1.name);
-                msg.reply(ctx.clone(), &status).await?;
-                break;
-            }
         } else {
             let status = format!("{} misses their attack", glad2.name);
             msg.reply(ctx.clone(), &status).await?;
+        }
+
+        if glad1.hp < 0 {
+            let status = format!("{} has been defeated in battle!", glad1.name);
+            msg.reply(ctx.clone(), &status).await?;
+            break;
+        } else if glad2.hp < 0 {
+            let status = format!("{} has been defeated in battle!", glad2.name);
+            msg.reply(ctx.clone(), &status).await?;
+            break;
         }
     }
 
