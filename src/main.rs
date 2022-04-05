@@ -431,6 +431,8 @@ async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
 
     loop {
         println!("{}'s Current HP: {}", glad2.name, glad2.hp);
+        println!("{}'s Current HP: {}", glad1.name, glad2.hp);
+
         let to_hit = roller(1, 20) + calc_modifier(glad1.strength);
         if to_hit >= glad2.ac {
             let dmg = roller(1, 2) + calc_modifier(glad1.strength);
@@ -442,7 +444,6 @@ async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
             msg.reply(ctx.clone(), &status).await?;
         }
 
-        println!("{}'s Current HP: {}", glad1.name, glad2.hp);
         let to_hit = roller(1, 20) + calc_modifier(glad2.strength);
         if to_hit >= glad1.ac {
             let dmg = roller(1, 2) + calc_modifier(glad2.strength);
