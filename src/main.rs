@@ -54,6 +54,7 @@ struct Weapon {
 
 fn get_weapon(weapon_key: String) -> Weapon {
     let mut weapon_table = HashMap::new();
+    println!("{}", weapon_key);
 
     weapon_table.insert(
         "Fists".to_string(),
@@ -148,6 +149,14 @@ fn get_weapon(weapon_key: String) -> Weapon {
         Weapon {
             name: "Shortbow".to_string(),
             damage_die: 6,
+            is_melee: false,
+        },
+    );
+    weapon_table.insert(
+        "Dagger".to_string(),
+        Weapon {
+            name: "Dagger".to_string(),
+            damage_die: 4,
             is_melee: false,
         },
     );
@@ -274,7 +283,7 @@ fn load_weapon(style: &str) -> Weapon {
             weapon = get_weapon(choice.to_string());
         }
         "Pugilatus" => weapon = get_weapon("Cestus".to_string()),
-        "Bestiarius" => weapon = get_weapon("Hand Axe,".to_string()),
+        "Bestiarius" => weapon = get_weapon("Hand Axe".to_string()),
         "Velites" => weapon = get_weapon("Javelin".to_string()),
         "Thracian" => {
             let possible_weapons = ["Dagger", "Sica", "Short Sword"];
@@ -283,10 +292,10 @@ fn load_weapon(style: &str) -> Weapon {
         }
         "Hoplomachus" => weapon = get_weapon("Spear".to_string()),
         "Retiarius" => weapon = get_weapon("Trident".to_string()),
-        "Murmillo" => weapon = get_weapon("Short sword".to_string()),
-        "Dimachaerus" => weapon = get_weapon("Long Swords".to_string()),
+        "Murmillo" => weapon = get_weapon("Short Sword".to_string()),
+        "Dimachaerus" => weapon = get_weapon("Long Sword".to_string()),
         "Provacator" => weapon = get_weapon("Short Sword".to_string()),
-        "Laquearius" => weapon = get_weapon("Dagger,".to_string()),
+        "Laquearius" => weapon = get_weapon("Dagger".to_string()),
         "Scissor" => weapon = get_weapon("Short Sword".to_string()),
         "Samnite" => weapon = get_weapon("Short Sword".to_string()),
         "Cataphractarius" => weapon = get_weapon("Polearm".to_string()),
