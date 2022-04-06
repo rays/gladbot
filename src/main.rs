@@ -622,12 +622,12 @@ async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
             msg.reply(ctx.clone(), &status).await?;
             glad2.hp = glad2.hp - dmg;
             if glad2.hp <= 0 {
-                let status = format!("{} has been defeated in mortal combat!", glad1.name);
+                let status = format!("{} has been defeated in mortal combat!", glad2.name);
                 msg.reply(ctx.clone(), &status).await?;
                 break;
             }
         } else {
-            let status = format!("{} misses their attack", glad2.name);
+            let status = format!("{} misses their attack", glad1.name);
             msg.reply(ctx.clone(), &status).await?;
         }
 
