@@ -182,7 +182,14 @@ fn get_hit_msg(weapon: String, attacker: String, opponent: String, damage: i8) -
         "{{ attacker }}'s {{ weapon }} strikes across {{ opponent }}'s chest, leaving a long, shallow gash [{{ damage }}]",
         "{{ opponent }} blocks {{ attacker}}'s {{ weapon }} and {{ attacker }} quickly lean into the block and smash the haft into whatever approximates for a mouth on {{ opponent }} [{{ damage }}]",
         "{{ attacker }}'s {{ weapon }} digs deep into the gut of {{ opponent }}, who groans painfully before expelling bloody spittle onto the ground [{{ damage }}]",
-        "{{ attacker }}'s powerful swipe thier {{ weapon }} sends {{ opponent }}'s index finger flying [{{ damage }}]"
+        "{{ attacker }}'s powerful swipe thier {{ weapon }} sends {{ opponent }}'s index finger flying [{{ damage }}]",
+        "{{ attacker }} sidesteps {{ opponent }}'s swing, and counter with a strike to their leg [{{ damage }}]",
+        "Vicious! {{ attacker }}'s {{ weapon }} scores a clean hit that shall be felt by {{ opponent }}'s ancestors! [{{ damage }}]",
+        "{{ attacker }} bring their {{ weapon }} down upon {{ opponent }} for a devastating overhead strike [{{ damage }}]",
+        "{{ attacker }} spins their {{ weapon }} with great skill and then bring it down upon {{ opponent }}'s shoulder with a shuddering crunch [{{ damage }}]",
+        "{{ attacker }} thrusts their {{ weapon }} forward in a feint and then hits {{ opponent }} from behind as {{ attacker }} draws it back [{{ damage }}]",
+        "{{ attacker }} fakes dropping their {{ weapon }} then catches it with their foot, and then kick it back at your {{ opponent }}'s face. And then {{ attacker }} catches it on the rebound. OOH YEAH! [{{ damage }}]",
+        "{{ attacker }}'s brutal strike carves {{ opponent }} a third nostril [{{ damage }}]"
     ];
 
     let source = hit_msgs.choose(&mut rand::thread_rng());
