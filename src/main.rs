@@ -558,16 +558,18 @@ async fn glad(ctx: &Context, msg: &Message) -> CommandResult {
 
     save_character(glad.clone())?;
 
-    let out = format! {"Gladiator {} has entered the arena!\n\nNationality: {}; Style: {}\nHP: {}; AC: {}\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({})\nNotes: {}",
-    glad.name, glad.nationality,
-    glad.style, glad.hp, glad.ac,
-    glad.strength, strength_mod,
-    glad.agility, agility_mod,
-    glad.stamina, stamina_mod,
-    glad.personality, personality_mod,
-    glad.inteligence, inteligence_mod,
-    glad.luck, luck_mod,
-    glad.notes};
+    let out = format! {"Gladiator {} has entered the arena!\n\nNationality: {}; Style: {}\nHP: {}; AC: {}\nStr: {} ({}); Agi: {} ({}); Sta: {} ({}); Per: {} ({}); Int: {} ({}); Luc: {} ({})\nNotes: {}\nWeilding: {}",
+        glad.name, glad.nationality,
+        glad.style, glad.hp, glad.ac,
+        glad.strength, strength_mod,
+        glad.agility, agility_mod,
+        glad.stamina, stamina_mod,
+        glad.personality, personality_mod,
+        glad.inteligence, inteligence_mod,
+        glad.luck, luck_mod,
+        glad.notes,
+        glad.weapon.name
+    };
     msg.reply(ctx, &out).await?;
     println!("{}", &out);
 
