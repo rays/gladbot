@@ -234,8 +234,9 @@ fn calc_modifier(stat: i8) -> i8 {
 
 fn calc_hp(stamina: i8, luck: i8, nationality: String) -> i8 {
     let hp: i8;
+    let hp_mod = calc_modifier(stamina) * 2;
     match nationality.as_str() {
-        "Macedonian" => hp = roller(2, 4) + calc_modifier(stamina) + calc_modifier(luck),
+        "Macedonian" => hp = roller(2, 4) + hp_mod + calc_modifier(luck),
         _ => hp = roller(2, 4) + calc_modifier(stamina),
     };
 
