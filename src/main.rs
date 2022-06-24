@@ -5,6 +5,7 @@ use serenity::framework::standard::{
     CommandResult, StandardFramework,
 };
 use serenity::model::channel::Message;
+use serenity::prelude::*;
 
 use handlebars::Handlebars;
 use std::collections::HashMap;
@@ -532,7 +533,8 @@ async fn main() {
 
     // Login with a bot token from the environment
     let token = env::var("GLADBOT_TOKEN").expect("token");
-    let mut client = Client::builder(token)
+    let intents = GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT;
+    let mut client = Client::builder(token, intents)
         .event_handler(Handler)
         .framework(framework)
         .await
