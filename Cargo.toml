@@ -14,3 +14,4 @@ random_name_generator = "0.1.2"
 tokio = { version = "1.17.0", features = ["macros", "rt-multi-thread"] }
 handlebars = "4.2.2"
 rust-embed = "6.3.0"
+regex = "1.5.5"
