@@ -1,6 +1,6 @@
 [package]
 name = "gladbot"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Ray Slakinski <ray.slakinski@gmail.com>"]
 edition = "2018"
 
@@ -8,10 +8,10 @@ edition = "2018"
 
 [dependencies]
 rand = "0.8.5"
-serenity = "0.11.2"
-rusqlite = "0.27.0"
+serenity = "0.11.5"
+rusqlite = "0.28.0"
 random_name_generator = "0.1.2"
-tokio = { version = "1.19.2", features = ["macros", "rt-multi-thread"] }
-handlebars = "4.3.1"
-rust-embed = "6.4.0"
-regex = "1.5.6"
+tokio = { version = "1.23.0", features = ["macros", "rt-multi-thread"] }
+handlebars = "4.3.5"
+rust-embed = "6.4.2"
+regex = "1.7.0"
