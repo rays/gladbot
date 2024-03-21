@@ -17,8 +17,6 @@ use std::env;
 use rnglib::{Language, RNG};
 use rusqlite::{params, Connection, Result};
 
-use tokio;
-
 #[group]
 #[commands(glad, taunt, fight)]
 
@@ -205,7 +203,7 @@ fn get_hit_msg(weapon: String, attacker: String, opponent: String, damage: i8) -
     data.insert("opponent", opponent);
     data.insert("damage", damage.to_string());
 
-    format!("{}", handlebars.render("hit", &data).unwrap())
+    handlebars.render("hit", &data).unwrap().to_string()
 }
 
 fn roller(num_die: i8, die_type: i8) -> i8 {
@@ -234,11 +232,9 @@ fn calc_modifier(stat: i8) -> i8 {
 }
 
 fn calc_hp(stamina: i8, luck: i8, nationality: String) -> i8 {
-    let hp: i8;
-    let hp_mod = calc_modifier(stamina) * 2;
-    match nationality.as_str() {
-        "Macedonian" => hp = roller(2, 4) + hp_mod + calc_modifier(luck),
-        _ => hp = roller(2, 4) + calc_modifier(stamina),
+    let hp: i8 = match nationality.as_str() {
+        "Macedonian" => roller(2, 4) + calc_modifier(stamina) * 2 + calc_modifier(luck),
+        _ => roller(2, 4) + calc_modifier(stamina),
     };
 
     hp
@@ -274,6 +270,33 @@ fn calc_ac(agility: i8, style: &str) -> i8 {
 
 fn load_weapon(style: &str) -> Weapon {
     let weapon: Weapon;
+
+    match style {
+        "Andabatae" => get_weapon("Short Sword".to_string()),
+        "Fugitivus" => {
+            let possible_weapons = [
+                "Fists",
+                "Club",
+                "Dagger",
+                "Short Sword",
+                "Hand Axe",
+                "Spear",
+                "Warhammer",
+                "Long Sword",
+            ];
+            let choice = possible_weapons.choose(&mut rand::thread_rng()).unwrap();
+            get_weapon(choice.to_string())
+        }
+        "Pugilatus" => get_weapon("Cestus".to_string()),
+        "Bestiarius" => get_weapon("Hand Axe".to_string()),
+        "Velites" => get_weapon("Javelin".to_string()),
+        "Thracian" => {
+            let possible_weapons = ["Dagger", "Sica", "Short Sword"];
+            let choice = possible_weapons.choose(&mut rand::thread_rng()).unwrap();
+            get_weapon(choice.to_string())
+        }
+        _ => panic!("Invalid style"),
+    };
 
     match style {
         "Andabatae" => weapon = get_weapon("Short Sword".to_string()),
@@ -318,32 +341,28 @@ fn load_weapon(style: &str) -> Weapon {
 }
 
 fn load_notes(style: &str) -> String {
-    let notes: String;
-
     match style {
-        "Andabatae" => notes = "Blinded with Short sword and no armor. -4 penalty to attack rolls, move only at half speed, +2 for opponents to hit.".to_string(),
-        "Fugitivus" => notes = "Roll 1d4 modified by luck: <1 Unarmed, 1 Club, 2 Dagger, 3 Short Sword, 4 Hand Axe, 5 Spear, 6 Warhammer, 7 Long Sword".to_string(),
-        "Pugilatus" => notes = "Cestus (2)".to_string(),
-        "Bestiarius" => notes = "Hand axe, spear, leather armor".to_string(),
-        "Velites" => notes = "Two javelins, shield".to_string(),
-        "Thracian" => notes = "Manica, shield, Roll 1d3: 1 Dagger, 2 Sica, 3 Short sword".to_string(),
-        "Hoplomachus" => notes = "Spear, short sword, shield, helmet".to_string(),
-        "Retiarius" => notes = "Trident, net, dagger, manica".to_string(),
-        "Murmillo" => notes = "Short sword, manica, large shield, helmet".to_string(),
-        "Dimachaerus" => notes = "Two long swords, leather armor, helmet".to_string(),
-        "Provacator" => notes = "Short sword, breastplate, helmet, large shield".to_string(),
-        "Laquearius" => notes = "Dagger, lasso/whip/grappling hook, manica".to_string(),
-        "Scissor" => notes = "Short sword, hide armor, scissor".to_string(),
-        "Samnite" => notes = "Short sword, large shield, scale mail".to_string(),
-        "Cataphractarius" => notes = "Polearm and scale mail".to_string(),
-        "Rudiarius" => notes = "2d100 GP starting funds for initial weapons/armor".to_string(),
-        "Sagittarius" => notes = "short bow, 20 arrows, horse, dagger".to_string(),
-        "Eques" => notes = "Javelin, long sword, shield, helmet, horse".to_string(),
-        "Essedarius" => notes = "Spear, helmet, chariot".to_string(),
-        _ => notes = "".to_string(),
-    };
-
-    notes
+        "Andabatae" => "Blinded with Short sword and no armor. -4 penalty to attack rolls, move only at half speed, +2 for opponents to hit.".to_string(),
+        "Fugitivus" => "Roll 1d4 modified by luck: <1 Unarmed, 1 Club, 2 Dagger, 3 Short Sword, 4 Hand Axe, 5 Spear, 6 Warhammer, 7 Long Sword".to_string(),
+        "Pugilatus" => "Cestus (2)".to_string(),
+        "Bestiarius" =>  "Hand axe, spear, leather armor".to_string(),
+        "Velites" => "Two javelins, shield".to_string(),
+        "Thracian" =>  "Manica, shield, Roll 1d3: 1 Dagger, 2 Sica, 3 Short sword".to_string(),
+        "Hoplomachus" =>  "Spear, short sword, shield, helmet".to_string(),
+        "Retiarius" =>  "Trident, net, dagger, manica".to_string(),
+        "Murmillo" =>  "Short sword, manica, large shield, helmet".to_string(),
+        "Dimachaerus" => "Two long swords, leather armor, helmet".to_string(),
+        "Provacator" =>  "Short sword, breastplate, helmet, large shield".to_string(),
+        "Laquearius" => "Dagger, lasso/whip/grappling hook, manica".to_string(),
+        "Scissor" => "Short sword, hide armor, scissor".to_string(),
+        "Samnite" =>  "Short sword, large shield, scale mail".to_string(),
+        "Cataphractarius" =>"Polearm and scale mail".to_string(),
+        "Rudiarius" =>  "2d100 GP starting funds for initial weapons/armor".to_string(),
+        "Sagittarius" => "short bow, 20 arrows, horse, dagger".to_string(),
+        "Eques" =>  "Javelin, long sword, shield, helmet, horse".to_string(),
+        "Essedarius" =>  "Spear, helmet, chariot".to_string(),
+        _ =>  "".to_string(),
+    }
 }
 
 fn find_style(luck: i8) -> String {
@@ -415,7 +434,7 @@ fn get_characters(num: i8) -> Result<Vec<Character>> {
 fn save_character(character: Character) -> Result<()> {
     let db = Connection::open("/tmp/glad.db")?;
 
-    let _result = match db.execute_batch(
+    match db.execute_batch(
         "
     CREATE TABLE IF NOT EXISTS glads (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -632,7 +651,7 @@ async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
                 dmg,
             );
             msg.reply(ctx.clone(), &status).await?;
-            glad2.hp = glad2.hp - dmg;
+            glad2.hp -= dmg;
             if glad2.hp <= 0 {
                 let status = format!("{} has been defeated in mortal combat!", glad2.name);
                 msg.reply(ctx.clone(), &status).await?;
@@ -660,7 +679,7 @@ async fn fight(ctx: &Context, msg: &Message) -> CommandResult {
                 dmg,
             );
             msg.reply(ctx.clone(), &status).await?;
-            glad1.hp = glad1.hp - dmg;
+            glad1.hp -= dmg;
             if glad1.hp <= 0 {
                 let status = format!("{} has been defeated in mortal combat!", glad1.name);
                 msg.reply(ctx.clone(), &status).await?;

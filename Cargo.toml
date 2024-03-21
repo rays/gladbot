@@ -7,11 +7,11 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.8.5"
-serenity = "0.11.5"
-rusqlite = "0.28.0"
-random_name_generator = "0.1.2"
-tokio = { version = "1.23.0", features = ["macros", "rt-multi-thread"] }
-handlebars = "4.3.5"
-rust-embed = "6.4.2"
-regex = "1.7.0"
+rand = "0.8"
+serenity = "0.11"
+rusqlite = "0.31"
+random_name_generator = "0.3"
+tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
+handlebars = "5.1"
+rust-embed = "8.3"
+regex = "1.10"
